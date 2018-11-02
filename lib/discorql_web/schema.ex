@@ -11,6 +11,7 @@ defmodule DiscorqlWeb.Schema do
     field :name, :string
     field :topic, :string
     field :nsfw, :boolean
+    field :messages, list_of(:message)
   end
 
   object :message do
@@ -53,7 +54,7 @@ defmodule DiscorqlWeb.Schema do
   end
 
   defp parse_snowflake(%Absinthe.Blueprint.Input.String{value: value}) do
-    case Snowflake.cast!(value) do
+    case Snowflake.cast(value) do
       {:ok, snowflake} -> {:ok, snowflake}
       _error -> :error
     end
@@ -71,14 +72,33 @@ defmodule DiscorqlWeb.Schema do
     @desc "Gets a list of messages in a channel."
     field :get_channel_messages, list_of(:message) do
       @desc "The channel ID."
-      arg :channel_id, non_null(:string)
+      arg :channel_id, non_null(:snowflake)
 
       @desc "How many messages should be fetched."
       arg :limit, :integer
 
       resolve fn _, %{channel_id: id, limit: limit}, _ ->
-        {:ok, flake} = Snowflake.cast(id)
-        Api.get_channel_messages(flake, limit)
+        Api.get_channel_messages(id, limit)
+      end
+    end
+
+    @desc "Gets a list of guild channels."
+    field :get_guild_channels, list_of(:channel) do
+      @desc "The guild id to get channels from."
+      arg :guild_id, non_null(:snowflake)
+
+      resolve fn p, %{guild_id: id}, a ->
+        IO.inspect(a)
+        Api.get_guild_channels(id)
+      end
+    end
+
+    @desc "Gets a channel."
+    field :get_channel, :channel do
+      arg :channel_id, non_null(:snowflake)
+
+      resolve fn _, %{channel_id: id}, _ ->
+        Api.get_channel(id)
       end
     end
   end
@@ -86,6 +106,16 @@ defmodule DiscorqlWeb.Schema do
   # mutation do
   # end
 
-  # subscription do
-  # end
+  subscription do
+    @desc "Listens for new messages created."
+    field :message_create, :message do
+      config fn args, _ ->
+        {:ok, args.guild_id}
+      end
+
+      resolve fn message, _, _ ->
+        {:ok, message}
+      end
+    end
+  end
 end
