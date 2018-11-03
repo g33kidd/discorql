@@ -15,7 +15,6 @@ defmodule DiscorqlWeb.Schema.MessageTypes do
     field :mention_roles, list_of(:snowflake)
     field :timestamp, :string
 
-    # TODO: Figure out how to resolve this... maybe it has to be done when the query happens.
     field :channel, :channel do
       resolve &Channels.get_channel/3
     end
