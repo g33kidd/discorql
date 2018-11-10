@@ -22,5 +22,25 @@ defmodule DiscorqlWeb.Schema.MessageTypes do
     field :guild, :guild do
       resolve &Guilds.get_guild/3
     end
+
+    # TODO: Need to get emojis working first in order to add this..
+    # field :reactions, list_of(:user) do
+    #   # TODO: Create an emoji scalar type that will convert a string into an Emoji or something..
+    #   # because we need the emoji type to get reactions of a certain emoji.
+    #   # arg :emoji, :string
+    #   arg :channel_id, non_null(:snowflake)
+    #   arg :message_id, non_null(:snowflake)
+
+    #   resolve &Messages.get_reactions/3
+    # end
+  end
+
+  object :message_queries do
+    field :message, :message do
+      arg :channel_id, non_null(:snowflake)
+      arg :message_id, non_null(:snowflake)
+
+      resolve &Messages.get_channel_message/3
+    end
   end
 end
