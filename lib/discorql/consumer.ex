@@ -17,6 +17,11 @@ defmodule Discorql.Consumer do
     end
   end
 
+  def handle_event({:READY, {_things}, _ws}) do
+    IO.puts("READY!")
+    Api.update_status(:online, "https://git.io/discorql")
+  end
+
   def handle_event(_) do
     :noop
   end
