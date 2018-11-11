@@ -51,12 +51,21 @@ defmodule DiscorqlWeb.Schema.GuildTypes do
     field :mentionable, :boolean
   end
 
+  object :prune do
+    field :pruned, :integer
+  end
+
   object :guild_queries do
     @desc "Gets a guild"
     field :guild, :guild do
       arg :id, non_null(:snowflake)
 
       resolve &Guilds.get_guild/3
+    end
+
+    @desc "Gets all guilds this bot is in"
+    field :guilds, list_of(:guild) do
+      resolve &Guilds.list_guilds/3
     end
 
     @desc "Gets channels in a guild"
@@ -76,6 +85,15 @@ defmodule DiscorqlWeb.Schema.GuildTypes do
     field :guild_invites, list_of(:invite) do
       arg :id, non_null(:snowflake)
       resolve &Guilds.get_guild_invites/3
+    end
+  end
+
+  object :guild_mutation do
+    @desc "Prune members in a server within days"
+    field :begin_prune, :prune do
+      arg :guild_id, non_null(:snowflake)
+      arg :days, :integer
+      resolve &Guilds.begin_guild_prune/3
     end
   end
 end
